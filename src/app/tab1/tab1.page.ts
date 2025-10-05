@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { LastfmService } from '../lastfm.service'; // Importa o serviço
-import { CommonModule } from '@angular/common'; // Importa para usar *ngFor
+import { LastfmService } from '../lastfm.service';
+import { CommonModule } from '@angular/common'; 
 import { HttpClientModule } from '@angular/common/http';
 
 @Component({
@@ -9,10 +9,10 @@ import { HttpClientModule } from '@angular/common/http';
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, HttpClientModule], // Adiciona CommonModule
+  imports: [IonicModule, CommonModule, HttpClientModule],
 })
 export class Tab1Page implements OnInit {
-  // Injeção de dependência simplificada (Angular 14+ standalone)
+  
   private lastfmService = inject(LastfmService); 
 
   topTracks: any[] = [];
@@ -28,7 +28,7 @@ export class Tab1Page implements OnInit {
     this.lastfmService.getTopTracks().subscribe({
       next: (data) => {
         // Acessa o array de faixas no JSON retornado
-        this.topTracks = data.tracks.track;
+        this.topTracks = data.tracks?.track;
         this.loading = false;
       },
       error: (err) => {

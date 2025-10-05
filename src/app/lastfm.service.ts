@@ -20,9 +20,14 @@ export class LastfmService {
       method: 'chart.gettoptracks',
       api_key: this.apiKey,
       format: 'json',
-      limit: '20' // Limita a 20 faixas para simplicidade
+      limit: '100' 
     };
     return this.http.get(this.apiUrl, { params });
+  }
+
+  getTrackInfo(artist: string, track: string): Observable<any> {
+    const url = `${this.apiUrl}/?method=track.getInfo&api_key=${this.apiKey}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}&format=json`;
+    return this.http.get(url);
   }
 
   // 2. Método para buscar faixas

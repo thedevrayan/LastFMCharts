@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <h5 style="text-align: center;">As músicas mais populares da semana</h5>
+  <h5 style="text-align: center;">As 100 músicas mais populares da semana</h5>
   <div *ngIf="!topTracks">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
     <p class="loading-text">Carregando Ranking...</p>
@@ -19,7 +19,7 @@
       </div>
 
       <ion-thumbnail slot="start" class="album-thumbnail">
-        <img [src]="track.image[2]['#text'] || 'assets/no-album.png'" alt="Capa do Álbum">
+        <img [src]="track.image[2]['#text'] || 'https://placehold.co/60x60/333333/ffffff?text=CD'" alt="Capa do Álbum">
       </ion-thumbnail>
       
       <ion-label>
