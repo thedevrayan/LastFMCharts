@@ -1,13 +1,41 @@
-import { Component } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular/standalone';
-import { ExploreContainerComponent } from '../explore-container/explore-container.component';
+import { Component, OnInit, inject } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
+import { LastfmService } from '../lastfm.service'; // Importa o serviço
+import { CommonModule } from '@angular/common'; // Importa para usar *ngFor
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, ExploreContainerComponent],
+  standalone: true,
+  imports: [IonicModule, CommonModule, HttpClientModule], // Adiciona CommonModule
 })
-export class Tab1Page {
+export class Tab1Page implements OnInit {
+  // Injeção de dependência simplificada (Angular 14+ standalone)
+  private lastfmService = inject(LastfmService); 
+
+  topTracks: any[] = [];
+  loading = true;
+
   constructor() {}
+
+  ngOnInit() {
+    this.loadTopTracks();
+  }
+
+  loadTopTracks() {
+    this.lastfmService.getTopTracks().subscribe({
+      next: (data) => {
+        // Acessa o array de faixas no JSON retornado
+        this.topTracks = data.tracks.track;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erro ao buscar Top Tracks:', err);
+        this.loading = false;
+        // Tratar erro aqui (ex: mostrar mensagem ao usuário)
+      }
+    });
+  }
 }
