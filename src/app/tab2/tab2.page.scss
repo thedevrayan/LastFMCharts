@@ -1,0 +1,40 @@
+// Estiliza a barra de busca (opcional, mas bom para padding)
+ion-searchbar {
+  padding: 10px;
+}
+
+// Estiliza os itens da lista de busca
+ion-item {
+  --padding-start: 10px;
+  --padding-end: 10px;
+
+  // Estilo da imagem do artista (mesmo estilo da Tab 1)
+  .artist-thumbnail {
+    --size: 60px;
+    min-width: 60px;
+    margin-right: 15px;
+    border-radius: 50%; // Deixa a imagem redonda para artistas
+    overflow: hidden;
+  }
+  
+  // Estilos da Label (texto)
+  ion-label {
+    .artist-name-result {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+    .listeners-count-result {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+// Estilos para as mensagens de Sem Resultados
+.no-results {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--ion-color-medium);
+  font-style: italic;
+}

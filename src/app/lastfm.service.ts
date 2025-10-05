@@ -6,6 +6,9 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class LastfmService {
+  searchArtists(query: any) {
+    throw new Error('Method not implemented.');
+  }
   private apiKey = '99367358d76ceb8387c28a03247560eb'; // <-- COLOQUE SUA CHAVE AQUI
   private apiUrl = 'https://ws.audioscrobbler.com/2.0/';
 

@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms'; // Importa para usar ngModel
 })
 export class Tab2Page {
   private lastfmService = inject(LastfmService);
+  artists: any[] = [];
+  
 
   searchTerm: string = '';
   searchResults: any[] = [];
