@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Lastfm } from './lastfm.service';
+import { LastfmService } from './lastfm.service';
 
 describe('Lastfm', () => {
-  let service: Lastfm;
+  let service: LastfmService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Lastfm);
+    service = TestBed.inject(LastfmService);
   });
 
   it('should be created', () => {

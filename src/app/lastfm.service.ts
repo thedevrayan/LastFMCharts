@@ -1,6 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface LastfmTrack {
+  name: string;
+  artist: string;
+  url: string;
+  listeners: number; // Mudamos para 'number' para usar o pipe 'number' no HTML
+  image: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -31,14 +40,20 @@ export class LastfmService {
   }
 
   // 2. Método para buscar faixas
-  searchTracks(trackName: string): Observable<any> {
-    const params = {
-      method: 'track.search',
-      track: trackName,
-      api_key: this.apiKey,
-      format: 'json',
-      limit: '10' // Limita a 10 resultados
-    };
-    return this.http.get(this.apiUrl, { params });
-  }
+  searchTracks(query: string): Observable<LastfmTrack[]> {
+    const url = `${this.apiUrl}?method=track.search&track=${encodeURIComponent(query)}&api_key=${this.apiKey}&format=json`;
+
+    // Retorna o Observable do get e usa pipe(map) para transformar a resposta
+    return this.http.get<any>(url).pipe(
+      map(data => {
+        const tracksData = data.results?.trackmatches?.track || [];
+
+        return tracksData.map((track: any): LastfmTrack => ({
+            name: track.name || 'Título Desconhecido',
+            artist: track.artist || 'Artista Desconhecido',
+            url: track.url || '#',
+            listeners: parseInt(track.listeners) || 0, 
+            image: track.image?.find((img: any) => img.size === 'large')?.['#text'] || 'https://placehold.co/100x100/100085/ffffff?text=BUSCA'}
+      ))}));
+      }
 }

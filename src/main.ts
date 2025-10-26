@@ -7,14 +7,14 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { addIcons } from 'ionicons';
-import { searchOutline, statsChartOutline } from 'ionicons/icons';
+import { listCircleOutline, searchOutline, statsChartOutline } from 'ionicons/icons';
 
 
 if (environment.production) {
   enableProdMode();
 }
 
-addIcons({ searchOutline, statsChartOutline });
+addIcons({ searchOutline, statsChartOutline, listCircleOutline });
 
 bootstrapApplication(AppComponent, {
   providers: [

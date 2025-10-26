@@ -37,5 +37,6 @@ export class Tab1Page implements OnInit {
         // Tratar erro aqui (ex: mostrar mensagem ao usuário)
       }
     });
+    
   }
 }

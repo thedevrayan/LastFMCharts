@@ -1,24 +1,29 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  // Esta rota é a rota PAI que contém as abas
   {
     path: 'tabs',
-    // lazy loading do componente 'TabsPage'
-    loadComponent: () => import('./tabs/tabs.page').then(m => m.TabsPage),
+    // Carrega o componente que contém a barra de abas (<ion-tabs>)
+    loadComponent: () => import('./tabs/tabs.page').then((m) => m.TabsPage),
     children: [
-      // Rotas filhas que definem o conteúdo de cada aba
+      // ------------------------------------------
+      // ROTAS FILHAS (DENTRO DAS ABAS)
+      // ------------------------------------------
       {
         path: 'tab1',
-        loadComponent: () => import('./tab1/tab1.page').then(m => m.Tab1Page)
+        loadComponent: () => import('./tab1/tab1.page').then((m) => m.Tab1Page),
       },
       {
         path: 'tab2',
-        loadComponent: () => import('./tab2/tab2.page').then(m => m.Tab2Page)
+        loadComponent: () => import('./tab2/tab2.page').then((m) => m.Tab2Page),
       },
-      // ... adicione outras abas, se houver
+      {
+        path: 'tab3', 
+        // Note: Em projetos Ionic/Angular, o caminho é frequentemente assim:
+        loadComponent: () => import('./tab3/tab3.page').then((m) => m.Tab3Page),
+      },
       
-      // Rota de Redirecionamento 1: Quando a URL for apenas '/tabs', vai para 'tab1'
+      // Redirecionamento 1: Redireciona de /tabs/ (sem nada depois) para /tabs/tab1
       {
         path: '',
         redirectTo: '/tabs/tab1',
@@ -27,8 +32,9 @@ export const routes: Routes = [
     ],
   },
   
-  // Rota de Redirecionamento 2: Quando a URL estiver VAZIA ('/'), vai para '/tabs/tab1'
-  // ESTA É A ROTA CRÍTICA QUE RESOLVE A TELA EM BRANCO INICIAL
+  // ------------------------------------------
+  // ROTA PRINCIPAL (FORA DAS ABAS)
+  // ------------------------------------------
   {
     path: '',
     redirectTo: '/tabs/tab1',
