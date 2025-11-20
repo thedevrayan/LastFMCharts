@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +10,7 @@ import { PlaylistService, Playlist, Track } from '../playlist.service';
 
 interface SearchTrack extends LastfmTrack {
   isSaving?: boolean;
+  imageUrl?: string;
 }
 
 @Component({
@@ -27,16 +28,35 @@ export class Tab2Page implements OnInit {
   public searchResults: SearchTrack[] = [];
   public isSearching = false;
 
-  public playlists = signal<Playlist[]>([]);
+  public playlists: Playlist[] = [];
 
   public isAddModalOpen = false;
+  public isConfirmDialogOpen = false;
+
   public selectedTrack: SearchTrack | null = null;
   public selectedPlaylistId: string | null = null;
 
+  public alertButtons = [
+    {
+      text: 'Cancelar',
+      role: 'cancel',
+      handler: () => this.closeConfirmDialog(),
+    },
+    {
+      text: 'Adicionar',
+      role: 'confirm',
+      handler: () => this.confirmAddTrack(),
+    },
+  ];
+
   async ngOnInit() {
+    await this.loadPlaylists();
+  }
+
+  async loadPlaylists() {
     try {
       const playlistsData = await lastValueFrom(this.playlistService.getAll());
-      this.playlists.set(playlistsData);
+      this.playlists = playlistsData;
     } catch (err) {
       console.error('Erro ao carregar playlists:', err);
     }
@@ -60,22 +80,16 @@ export class Tab2Page implements OnInit {
     }
   }
 
-async openAddModal(track: SearchTrack) {
-  this.selectedTrack = track;
+  async openAddModal(track: SearchTrack) {
+    this.selectedTrack = track;
 
-  try {
-    const playlistsData = await lastValueFrom(this.playlistService.getAll());
-    this.playlists.set(playlistsData);
-  } catch (err) {
-    console.error('Erro ao carregar playlists:', err);
-    this.playlists.set([]); 
+    await this.loadPlaylists();
+
+    this.selectedPlaylistId =
+      this.playlists.length > 0 ? this.playlists[0]._id ?? null : null;
+
+    this.isAddModalOpen = true;
   }
-
-  const allPlaylists = this.playlists();
-  this.selectedPlaylistId = allPlaylists.length > 0 ? allPlaylists[0]._id ?? null : null;
-
-  this.isAddModalOpen = true;
-}
 
   closeAddModal() {
     this.isAddModalOpen = false;
@@ -83,27 +97,48 @@ async openAddModal(track: SearchTrack) {
     this.selectedPlaylistId = null;
   }
 
+  openConfirmDialog() {
+    this.isConfirmDialogOpen = true;
+  }
+
+  confirmAddTrack() {
+    this.isConfirmDialogOpen = false;
+    this.addTrackToPlaylist();
+  }
+
+  closeConfirmDialog() {
+    this.isConfirmDialogOpen = false;
+  }
+
   async addTrackToPlaylist() {
     if (!this.selectedTrack || !this.selectedPlaylistId) return;
 
     const trackToAdd: Track = {
       name: this.selectedTrack.name,
-      artist: this.selectedTrack.artist,
-      image: this.selectedTrack.image, 
+      artist:
+        typeof this.selectedTrack.artist === 'string'
+          ? this.selectedTrack.artist
+          : (this.selectedTrack.artist as any)?.name || '',
+      image:
+        this.selectedTrack.image ||
+        (this.selectedTrack?.imageUrl as string) ||
+        '',
       addedAt: new Date().toISOString(),
     };
 
-    const index = this.searchResults.findIndex(
-      (t) => t.name === this.selectedTrack?.name && t.artist === this.selectedTrack?.artist
-    );
-    if (index !== -1) this.searchResults[index].isSaving = true;
+    console.log('📌 Enviando track TAB2:', trackToAdd);
 
     try {
-      await this.playlistService.addTrackToPlaylist(this.selectedPlaylistId, trackToAdd);
+      await lastValueFrom(
+        this.playlistService.addTrackToPlaylist(
+          this.selectedPlaylistId,
+          trackToAdd
+        )
+      );
+      console.log('🎵 Música adicionada com sucesso!');
     } catch (error) {
-      console.error('Erro ao adicionar música:', error);
+      console.error('Erro ao adicionar música do TAB2:', error);
     } finally {
-      if (index !== -1) this.searchResults[index].isSaving = false;
       this.closeAddModal();
     }
   }

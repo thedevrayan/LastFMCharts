@@ -140,21 +140,6 @@
           </ion-item>
         </ion-list>
 
-        <ion-item>
-          <ion-label position="stacked">Nome da Música</ion-label>
-          <ion-input [(ngModel)]="newTrackName"></ion-input>
-        </ion-item>
-
-        <ion-item>
-          <ion-label position="stacked">Artista</ion-label>
-          <ion-input [(ngModel)]="newTrackArtist"></ion-input>
-        </ion-item>
-
-        <ion-button expand="full" color="tertiary" class="ion-margin-top"
-          [disabled]="!newTrackName || !newTrackArtist" (click)="addTrack()">
-          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
-          Adicionar Música
-        </ion-button>
       </ion-content>
     </ng-template>
   </ion-modal>

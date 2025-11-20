@@ -21,35 +21,33 @@ export interface Playlist {
   providedIn: 'root'
 })
 export class PlaylistService {
-  addTrack(id: string, track: string) {
-  return this.http.post<Playlist>(`${this.apiUrl}/playlists/${id}/tracks`, { track });
-}
-  updatePlaylist(id: string, data: Playlist): Observable<Playlist> {
-  return this.http.put<Playlist>(`${this.apiUrl}/${id}`, data);
-}
-    private apiUrl = 'http://localhost:3000/api/playlists'; 
+  addTrack(playlistId: string, track: string): Observable<unknown> {
+    throw new Error('Method not implemented.');
+  }
+
+  private apiUrl = 'http://localhost:3000/api/playlists'; 
     
-    constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {}
 
   getAll(): Observable<Playlist[]> {
     return this.http.get<Playlist[]>(this.apiUrl);
   }
 
-create(data: Partial<Playlist>): Observable<Playlist> {
-  return this.http.post<Playlist>(this.apiUrl, data);
-}
+  create(data: Partial<Playlist>): Observable<Playlist> {
+    return this.http.post<Playlist>(this.apiUrl, data);
+  }
 
-  update(id: string, data: Partial<Playlist>) : Observable<Playlist> {
-  return this.http.put<Playlist>(`${this.apiUrl}/${id}`, data);
-}
+  update(id: string, data: Partial<Playlist>): Observable<Playlist> {
+    return this.http.put<Playlist>(`${this.apiUrl}/${id}`, data);
+  }
 
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  addTrackToPlaylist(playlistId: string, track: Track): Observable<Playlist> {
-    return this.http.post<Playlist>(`${this.apiUrl}/${playlistId}/tracks`, track);
-  }
+  addTrackToPlaylist(id: string, track: Track) {
+  return this.http.post<Playlist>(`${this.apiUrl}/${id}/tracks`, track);
+}
 
   removeTrackFromPlaylist(playlistId: string, trackName: string): Observable<Playlist> {
     return this.http.delete<Playlist>(`${this.apiUrl}/${playlistId}/tracks/${encodeURIComponent(trackName)}`);

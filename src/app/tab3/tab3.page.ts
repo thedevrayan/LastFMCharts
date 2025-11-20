@@ -175,35 +175,32 @@ async addTrack() {
   const newTrack: Track = {
     name,
     artist,
-    image: '', 
+    image: '',
     addedAt: new Date().toISOString(),
   };
 
   const playlistId = this.selectedPlaylist._id;
-  const updatedPlaylist: Playlist = {
-    ...this.selectedPlaylist,
-    tracks: [...(this.selectedPlaylist.tracks || []), newTrack],
-  };
 
   try {
-    await lastValueFrom(this.playlistService.update(playlistId, updatedPlaylist));
+    const updated = await lastValueFrom(
+      this.playlistService.addTrackToPlaylist(playlistId, newTrack)
+    );
 
-    this.selectedPlaylist = updatedPlaylist;
+    this.selectedPlaylist = updated;
 
-    const idx = this.playlists.findIndex(p => p._id === playlistId);
-    if (idx !== -1) {
-      this.playlists[idx] = updatedPlaylist;
+    const index = this.playlists.findIndex(p => p._id === playlistId);
+    if (index !== -1) {
+      this.playlists[index] = updated;
     }
 
     this.newTrackName = '';
     this.newTrackArtist = '';
 
-    console.log('✅ Música adicionada localmente e no backend');
+    console.log('Música adicionada com sucesso!');
   } catch (err) {
     console.error('Erro ao adicionar música:', err);
   }
 }
-
 
   async removeTrackFromPlaylist(playlistId: string, trackName: string) {
     try {
