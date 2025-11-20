@@ -32,18 +32,25 @@ export class Tab1Page implements OnInit {
     await this.loadPlaylists();
   }
 
-  loadTopTracks() {
-    this.lastfmService.getTopTracks().subscribe({
-      next: (data) => {
-        this.topTracks = data.tracks?.track;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Erro ao buscar Top Tracks:', err);
-        this.loading = false;
-      }
-    });
-  }
+ loadTopTracks() {
+  this.lastfmService.getTopTracks().subscribe({
+    next: (data) => {
+      this.topTracks = data.tracks?.track.map((track: any) => {
+        const imageObj = track.image.reverse().find((img: any) => img['#text']); 
+        return {
+          ...track,
+          imageUrl: imageObj ? imageObj['#text'] : '', 
+        };
+      });
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Erro ao buscar Top Tracks:', err);
+      this.loading = false;
+    }
+  });
+}
+
 
   async loadPlaylists() {
     try {
@@ -60,10 +67,12 @@ export class Tab1Page implements OnInit {
       return;
     }
 
+    const imageObj = track.image?.reverse().find((img: any) => img['#text']);
+
     const trackData: Track = {
       name: track.name,
       artist: track.artist.name,
-      image: track.image[2]['#text'] || '',
+      image: imageObj ? imageObj['#text'] : '',
       addedAt: new Date().toISOString(),
     };
 

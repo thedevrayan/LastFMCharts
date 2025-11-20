@@ -15,9 +15,10 @@
 
   <ion-list *ngIf="searchResults.length > 0">
     <ion-item *ngFor="let track of searchResults">
-      <ion-thumbnail slot="start">
-        <img [src]="track.image || 'https://placehold.co/60x60/333333/ffffff?text=CD'">
-      </ion-thumbnail>
+      <ion-thumbnail slot="start" *ngIf="track.imageUrl">
+  <img [src]="track.imageUrl">
+  </ion-thumbnail>
+
 
       <ion-label>
         <h2>{{ track.name }}</h2>
@@ -32,7 +33,6 @@
     </ion-item>
   </ion-list>
 
-  <!-- MODAL DE SELEÇÃO DE PLAYLIST -->
   <ion-modal [isOpen]="isAddModalOpen">
     <ng-template>
       <ion-header>
@@ -70,7 +70,6 @@
     </ng-template>
   </ion-modal>
 
-  <!-- ALERTA DE CONFIRMAÇÃO -->
   <ion-alert
     [isOpen]="isConfirmDialogOpen"
     header="Adicionar música"
