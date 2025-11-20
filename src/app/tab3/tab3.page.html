@@ -1,237 +1,159 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      <ion-icon name="bookmarks-outline" class="ion-margin-end"></ion-icon>
-      Minhas Playlists
-    </ion-title>
+    <ion-title>PLAYLISTS</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="setCreationModalOpen(true)">
-        <ion-icon name="add-circle-outline"></ion-icon>
+      <ion-button color="primary" (click)="isCreationModalOpen = true">
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Criar Playlist
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Playlists</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  
-  <div id="container">
-    <div class="ion-padding">
-      <p class="ion-text-center">Gerencie suas coleções de músicas salvas.</p>
-      
-      <div *ngIf="userId" class="ion-text-center ion-padding-bottom">
-        <ion-note>UID: {{ userId }}</ion-note>
-      </div>
-    </div>
-    
-    <!-- Indicador de Carregamento -->
-    <div *ngIf="isLoading" class="ion-text-center ion-padding">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Conectando ao Backend...</p>
-    </div>
+<ion-content class="ion-padding">
 
-    <!-- Lista de Playlists -->
-    <ion-list *ngIf="!isLoading && playlists.length > 0">
-      <ion-list-header>
-        <ion-label>Suas Playlists</ion-label>
-      </ion-list-header>
-      
-      <ion-item-sliding *ngFor="let playlist of playlists">
-        <!-- Item Principal: Exibe e abre os detalhes -->
-        <ion-item 
-          button 
-          detail
-          (click)="openPlaylistDetails(playlist)"
-          lines="full">
-          <ion-icon name="musical-notes-outline" slot="start"></ion-icon>
-          <ion-label>
-            <h2>{{ playlist.name }}</h2>
-            <p>{{ playlist.description }}</p>
-            <p class="ion-text-wrap ion-text-capitalize">
-              {{ playlist.tracks.length }} Músicas | Criada em {{ playlist.createdAt?.toDate() | date: 'mediumDate' }}
-            </p>
-          </ion-label>
-        </ion-item>
-        
-        <!-- Ações do lado esquerdo (Deletar) -->
-        <ion-item-options side="end">
-          <ion-item-option color="danger" (click)="deletePlaylist(playlist.id)">
-            <ion-icon slot="icon-only" name="trash"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-    </ion-list>
-    
-    <!-- Mensagem de lista vazia -->
-    <div *ngIf="!isLoading && playlists.length === 0" class="ion-text-center ion-padding">
-      <ion-icon name="alert-circle-outline" size="large" color="medium"></ion-icon>
-      <p>Nenhuma playlist encontrada. Crie a sua primeira!</p>
-    </div>
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando playlists...</p>
   </div>
 
-  <!-- --- Modal de Criação de Playlist (Formulário C) --- -->
-  <ion-modal [isOpen]="isCreationModalOpen" (didDismiss)="setCreationModalOpen(false)">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button (click)="setCreationModalOpen(false)">
-              <ion-icon name="close-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-title>Nova Playlist</ion-title>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <ion-list lines="full">
-          <ion-item>
-            <ion-input 
-              label="Nome da Playlist" 
-              labelPlacement="floating" 
-              [(ngModel)]="newPlaylistName" 
-              placeholder="Ex: Favoritas do Rock"
-              required>
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-textarea 
-              label="Descrição (Opcional)" 
-              labelPlacement="floating" 
-              rows="3" 
-              [(ngModel)]="newPlaylistDescription" 
-              placeholder="Ex: Músicas para ouvir no carro.">
-            </ion-textarea>
+  <ion-list *ngIf="!loading && playlists.length > 0">
+    <ion-item-sliding *ngFor="let playlist of playlists">
+      <ion-item button (click)="togglePlaylist(playlist)">
+        <ion-label>
+          <h2>{{ playlist.name }}</h2>
+          <p>{{ playlist.description }}</p>
+        </ion-label>
+
+        <ion-icon
+          slot="end"
+          [name]="expandedPlaylistId === playlist._id ? 'chevron-up-outline' : 'chevron-down-outline'">
+        </ion-icon>
+      </ion-item>
+
+      <div *ngIf="expandedPlaylistId === playlist._id" class="playlist-tracks ion-padding-start">
+
+        <ion-list *ngIf="playlist.tracks && playlist.tracks.length > 0">
+          <ion-item *ngFor="let track of playlist.tracks">
+            <ion-label>
+              <h3>{{ track.name }}</h3>
+              <p>{{ track.artist }}</p>
+            </ion-label>
           </ion-item>
         </ion-list>
-        
-        <ion-button 
-          expand="block" 
-          class="ion-margin-top"
-          [disabled]="!newPlaylistName.trim()"
-          (click)="createPlaylist()">
-          Criar Playlist
+
+        <ion-item *ngIf="!playlist.tracks || playlist.tracks.length === 0">
+          <ion-label color="medium">Nenhuma música adicionada ainda.</ion-label>
+        </ion-item>
+
+        <ion-button fill="clear" color="primary" (click)="openEditModal(playlist)">
+          <ion-icon name="create-outline" slot="start"></ion-icon>
+          Editar
         </ion-button>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
 
-  <!-- --- Modal de Detalhes da Playlist (Conteúdo R) --- -->
-  <ion-modal [isOpen]="isDetailsModalOpen" (didDismiss)="closePlaylistDetails()">
+        <ion-button fill="clear" color="danger" (click)="deletePlaylist(playlist._id)">
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Excluir
+        </ion-button>
+      </div>
+    </ion-item-sliding>
+  </ion-list>
+
+  <div *ngIf="!loading && playlists.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="musical-notes-outline" size="large"></ion-icon>
+    <p>Nenhuma playlist criada.</p>
+  </div>
+
+  <ion-modal [isOpen]="isCreationModalOpen" (didDismiss)="closeCreationModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Criar Nova Playlist</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeCreationModal()">Fechar</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <ion-item>
+        <ion-label position="stacked">Nome da Playlist</ion-label>
+        <ion-input [(ngModel)]="newPlaylistName"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Descrição (opcional)</ion-label>
+        <ion-input [(ngModel)]="newPlaylistDescription"></ion-input>
+      </ion-item>
+
+      <ion-button expand="full" color="success" class="ion-margin-top"
+        [disabled]="!newPlaylistName" (click)="createPlaylist()">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        Criar Playlist
+      </ion-button>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+    <ion-modal [isOpen]="!!selectedPlaylist" (didDismiss)="selectedPlaylist = null">
     <ng-template>
       <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button (click)="closePlaylistDetails()">
-              <ion-icon name="arrow-back-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-title>{{ selectedPlaylist?.name }}</ion-title>
-          
-          <!-- Botão de Edição -->
-          <ion-buttons slot="end">
-             <ion-button *ngIf="selectedPlaylist" (click)="openEditModal(selectedPlaylist)">
-                <ion-icon name="create-outline"></ion-icon>
-             </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        
-        <div *ngIf="selectedPlaylist">
-          <!-- Detalhes e Descrição -->
-          <p class="ion-text-wrap">{{ selectedPlaylist.description }}</p>
-          <ion-note>Total de Músicas: {{ selectedPlaylist.tracks.length }}</ion-note>
-          
-          <!-- SUBSTITUIÇÃO: Usando uma div simples como separador em vez de ion-divider -->
-          <div style="border-bottom: 1px solid var(--ion-color-step-100, #cccccc); margin: 16px 0;"></div>
-
-          <!-- Lista de Músicas -->
-          <ion-list *ngIf="selectedPlaylist.tracks.length > 0">
-            <ion-list-header>
-              <ion-label>Músicas (Deslize para remover)</ion-label>
-            </ion-list-header>
-            
-            <ion-item-sliding *ngFor="let track of selectedPlaylist.tracks; let i = index">
-              <ion-item lines="full">
-                <ion-thumbnail slot="start">
-                  <img [src]="track.image || 'https://placehold.co/100x100/3880ff/ffffff?text=MÚSICA'" 
-                       alt="Capa da música">
-                </ion-thumbnail>
-                
-                <ion-label>
-                  <h2>{{ track.name }}</h2>
-                  <p>{{ track.artist }}</p>
-                  <ion-note>Adicionada em: {{ track.addedAt?.toDate() | date: 'shortDate' }}</ion-note>
-                </ion-label>
-              </ion-item>
-
-              <!-- Ação para remover a música -->
-              <ion-item-options side="end">
-                <ion-item-option color="danger" (click)="removeTrackFromPlaylist(selectedPlaylist, i)">
-                  <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-
-            </ion-item-sliding>
-          </ion-list>
-          
-          <!-- Mensagem de playlist vazia -->
-          <div *ngIf="selectedPlaylist.tracks.length === 0" class="ion-text-center ion-padding">
-            <ion-icon name="sad-outline" size="large" color="medium"></ion-icon>
-            <p>Essa playlist está vazia. Adicione músicas na aba **Charts** ou **Busca**!</p>
-          </div>
-
-        </div>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
-
-  <!-- --- Modal de Edição de Playlist (Formulário U) --- -->
-  <ion-modal [isOpen]="isEditModalOpen" (didDismiss)="closeEditModal()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button (click)="closeEditModal()">
-              <ion-icon name="arrow-back-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
+        <ion-toolbar color="primary">
           <ion-title>Editar Playlist</ion-title>
-        </ion-toolbar>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeEditModal()">Fechar</ion-button>
+          </ion-buttons>
+        </ion-toolbar> 
       </ion-header>
+
       <ion-content class="ion-padding">
-        <ion-list lines="full">
-          <ion-item>
-            <ion-input 
-              label="Novo Nome" 
-              labelPlacement="floating" 
-              [(ngModel)]="editingPlaylistName" 
-              placeholder="Novo nome"
-              required>
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-textarea 
-              label="Nova Descrição" 
-              labelPlacement="floating" 
-              rows="3" 
-              [(ngModel)]="editingPlaylistDescription" 
-              placeholder="Nova descrição.">
-            </ion-textarea>
+        <ion-item>
+          <ion-label position="stacked">Nome da Playlist</ion-label>
+          <ion-input [(ngModel)]="editingPlaylistName"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Descrição (opcional)</ion-label>
+          <ion-input [(ngModel)]="editingPlaylistDescription"></ion-input>
+        </ion-item>
+
+        <ion-button expand="full" color="success" class="ion-margin-top"
+          [disabled]="!editingPlaylistName" (click)="savePlaylistEdits()">
+          <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+          Salvar
+        </ion-button>
+
+        <ion-list *ngIf="selectedPlaylist?.tracks?.length">
+          <ion-list-header>
+            <ion-label>Músicas</ion-label>
+          </ion-list-header>
+
+          <ion-item *ngFor="let track of selectedPlaylist?.tracks">
+            <ion-label>
+              <h3>{{ track.name }}</h3>
+              <p>{{ track.artist }}</p>
+            </ion-label>
+            <ion-button color="danger" fill="clear"
+              (click)="removeTrackFromPlaylist(selectedPlaylist?._id!, track.name)">
+              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+            </ion-button>
           </ion-item>
         </ion-list>
-        
-        <ion-button 
-          expand="block" 
-          class="ion-margin-top"
-          color="success"
-          [disabled]="!editingPlaylistName.trim()"
-          (click)="updatePlaylistDetails()">
-          Salvar Alterações
+
+        <ion-item>
+          <ion-label position="stacked">Nome da Música</ion-label>
+          <ion-input [(ngModel)]="newTrackName"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Artista</ion-label>
+          <ion-input [(ngModel)]="newTrackArtist"></ion-input>
+        </ion-item>
+
+        <ion-button expand="full" color="tertiary" class="ion-margin-top"
+          [disabled]="!newTrackName || !newTrackArtist" (click)="addTrack()">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Adicionar Música
         </ion-button>
       </ion-content>
     </ng-template>

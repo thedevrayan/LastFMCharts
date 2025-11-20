@@ -1,13 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http'; // IMPORTADO: Necessário para componentes standalone
-import { lastValueFrom } from 'rxjs'; // IMPORTADO: Converte Observable em Promise para usar com await
+import { HttpClientModule } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
-import { LastfmService, LastfmTrack } from '../lastfm.service'; 
-import { PlaylistService, Track } from '../playlist.service';
-import { signal } from '@angular/core';
+import { LastfmService, LastfmTrack } from '../lastfm.service';
+import { PlaylistService, Playlist, Track } from '../playlist.service';
 
 interface SearchTrack extends LastfmTrack {
   isSaving?: boolean;
@@ -18,117 +17,94 @@ interface SearchTrack extends LastfmTrack {
   templateUrl: 'tab2.page.html',
   styleUrls: ['tab2.page.scss'],
   standalone: true,
-  // Adiciona o HttpClientModule para que o serviço funcione
-  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule] 
+  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule],
 })
 export class Tab2Page implements OnInit {
-  
-  // Serviços Injetados
   private lastfmService = inject(LastfmService);
-  private playlistService = inject(PlaylistService); 
+  private playlistService = inject(PlaylistService);
 
-  // Estado Local de Busca
-  public searchTerm = signal('');
-  public searchResults = signal<SearchTrack[]>([]);
-  public isSearching = signal(false);
-  
-  // Estado de Playlists para Adição
-  public playlists = this.playlistService.playlists; 
+  public searchTerm = '';
+  public searchResults: SearchTrack[] = [];
+  public isSearching = false;
+
+  public playlists = signal<Playlist[]>([]);
+
   public isAddModalOpen = false;
   public selectedTrack: SearchTrack | null = null;
   public selectedPlaylistId: string | null = null;
 
-  constructor() {}
-
-  ngOnInit(): void {
-    // Inicialização, se necessário
+  async ngOnInit() {
+    try {
+      const playlistsData = await lastValueFrom(this.playlistService.getAll());
+      this.playlists.set(playlistsData);
+    } catch (err) {
+      console.error('Erro ao carregar playlists:', err);
+    }
   }
 
-  // --- Funções de Busca ---
-
   async searchMusic() {
-    const term = this.searchTerm().trim();
+    const term = this.searchTerm.trim();
     if (!term) {
-      this.searchResults.set([]);
+      this.searchResults = [];
       return;
     }
-    
-    this.isSearching.set(true);
-    this.searchResults.set([]);
 
+    this.isSearching = true;
     try {
-      // CORREÇÃO: Usamos lastValueFrom para converter o Observable<LastfmTrack[]> 
-      // em uma Promise<LastfmTrack[]>, que pode ser aguardada pelo 'await'.
-      const results: LastfmTrack[] = await lastValueFrom(this.lastfmService.searchTracks(term)); 
-      
-      this.searchResults.set(results.map(r => ({
-          ...r, 
-          isSaving: false
-      }) as SearchTrack));
-
+      const results = await lastValueFrom(this.lastfmService.searchTracks(term));
+      this.searchResults = results.map((r) => ({ ...r, isSaving: false }));
     } catch (error) {
       console.error('Erro na busca:', error);
     } finally {
-      this.isSearching.set(false);
+      this.isSearching = false;
     }
   }
 
-  // --- Funções de Adição à Playlist ---
+async openAddModal(track: SearchTrack) {
+  this.selectedTrack = track;
 
-  /**
-   * Abre o modal de seleção de playlist para uma música específica.
-   */
-  openAddModal(track: SearchTrack) {
-    this.selectedTrack = track;
-    // Seleciona a primeira playlist por padrão, se houver
-    this.selectedPlaylistId = this.playlists().length > 0 ? this.playlists()[0].id : null;
-    this.isAddModalOpen = true;
+  try {
+    const playlistsData = await lastValueFrom(this.playlistService.getAll());
+    this.playlists.set(playlistsData);
+  } catch (err) {
+    console.error('Erro ao carregar playlists:', err);
+    this.playlists.set([]); 
   }
-  
+
+  const allPlaylists = this.playlists();
+  this.selectedPlaylistId = allPlaylists.length > 0 ? allPlaylists[0]._id ?? null : null;
+
+  this.isAddModalOpen = true;
+}
+
   closeAddModal() {
     this.isAddModalOpen = false;
     this.selectedTrack = null;
     this.selectedPlaylistId = null;
   }
 
-  /**
-   * Adiciona a música selecionada à playlist escolhida usando o PlaylistService.
-   */
-  async addTrackToSelectedPlaylist() {
-    if (!this.selectedTrack || !this.selectedPlaylistId) {
-      console.warn("Música ou Playlist não selecionada.");
-      return;
-    }
+  async addTrackToPlaylist() {
+    if (!this.selectedTrack || !this.selectedPlaylistId) return;
 
-    const track = this.selectedTrack;
-    const playlistId = this.selectedPlaylistId;
-    
-    // Constrói o objeto Track básico para ser salvo.
-    const trackToAdd: Omit<Track, 'addedAt'> = {
-        name: track.name,
-        artist: track.artist,
-        image: track.image, 
+    const trackToAdd: Track = {
+      name: this.selectedTrack.name,
+      artist: this.selectedTrack.artist,
+      image: this.selectedTrack.image, 
+      addedAt: new Date().toISOString(),
     };
 
-    // Atualiza o estado visualmente para indicar salvamento
-    const currentResults = this.searchResults();
-    const resultIndex = currentResults.findIndex(t => t.name === track.name && t.artist === track.artist);
-    if (resultIndex !== -1) {
-        currentResults[resultIndex].isSaving = true;
-        this.searchResults.set([...currentResults]);
-    }
-    
+    const index = this.searchResults.findIndex(
+      (t) => t.name === this.selectedTrack?.name && t.artist === this.selectedTrack?.artist
+    );
+    if (index !== -1) this.searchResults[index].isSaving = true;
+
     try {
-        await this.playlistService.addTrackToPlaylist(playlistId, trackToAdd);
+      await this.playlistService.addTrackToPlaylist(this.selectedPlaylistId, trackToAdd);
     } catch (error) {
-        console.error("Falha ao adicionar música:", error);
+      console.error('Erro ao adicionar música:', error);
     } finally {
-        // Limpa o estado de salvamento
-        if (resultIndex !== -1) {
-            currentResults[resultIndex].isSaving = false;
-            this.searchResults.set([...currentResults]);
-        }
-        this.closeAddModal();
+      if (index !== -1) this.searchResults[index].isSaving = false;
+      this.closeAddModal();
     }
   }
 }

@@ -1,20 +1,20 @@
 import { enableProdMode, importProvidersFrom } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router'; // <-- Importes importantes
-import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone'; // <-- OBRIGATÓRIO
+import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router'; 
+import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone'; 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { addIcons } from 'ionicons';
-import { listCircleOutline, searchOutline, statsChartOutline } from 'ionicons/icons';
+import { addCircleOutline, checkmarkCircleOutline, chevronDownOutline, chevronUpOutline, createOutline, listCircleOutline, searchOutline, statsChartOutline, trashOutline } from 'ionicons/icons';
 
 
 if (environment.production) {
   enableProdMode();
 }
 
-addIcons({ searchOutline, statsChartOutline, listCircleOutline });
+addIcons({ searchOutline, statsChartOutline, listCircleOutline, addCircleOutline, createOutline, trashOutline, checkmarkCircleOutline, chevronDownOutline, chevronUpOutline });
 
 bootstrapApplication(AppComponent, {
   providers: [

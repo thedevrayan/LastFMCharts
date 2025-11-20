@@ -21,3 +21,19 @@ ion-item-option {
 ion-chip {
     font-size: 0.8em;
 }
+.create-playlist-btn {
+  --background: linear-gradient(135deg, #5b86e5, #36d1dc);
+  --color: #fff;
+  --border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(91, 134, 229, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-playlist-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(91, 134, 229, 0.5);
+} 
+
+

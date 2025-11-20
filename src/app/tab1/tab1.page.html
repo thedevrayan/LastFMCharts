@@ -6,12 +6,22 @@
 
 <ion-content [fullscreen]="true">
   <h5 style="text-align: center;">As 100 músicas mais populares da semana</h5>
-  <div *ngIf="!topTracks">
+
+  <ion-item *ngIf="playlists.length > 0">
+    <ion-label>Escolha a playlist para adicionar a música</ion-label>
+    <ion-select [(ngModel)]="selectedPlaylistId" placeholder="Selecione">
+      <ion-select-option *ngFor="let playlist of playlists" [value]="playlist._id">
+        {{ playlist.name }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <div *ngIf="!topTracks || loading">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
     <p class="loading-text">Carregando Ranking...</p>
   </div>
 
-  <ion-list *ngIf="topTracks">
+  <ion-list *ngIf="topTracks && !loading">
     <ion-item *ngFor="let track of topTracks; let i = index">
       
       <div slot="start" class="track-rank">
@@ -19,7 +29,7 @@
       </div>
 
       <ion-thumbnail slot="start" class="album-thumbnail">
-        <img [src]="track.image[2]['#text'] || 'https://placehold.co/60x60/333333/ffffff?text=CD'" alt="Capa do Álbum">
+<img [src]="track.image[2]?.['#text'] || 'https://placehold.co/60x60/333333/ffffff?text=CD'">
       </ion-thumbnail>
       
       <ion-label>
@@ -27,7 +37,11 @@
         <p class="artist-name">{{ track.artist.name }}</p>
         <p class="listeners-count">Ouvintes: {{ track.listeners | number: '1.0-0' }}</p>
       </ion-label>
+
+      <ion-button slot="end" color="primary" (click)="addTrackToPlaylist(track)">
+        Adicionar
+      </ion-button>
+
     </ion-item>
   </ion-list>
-
 </ion-content>
