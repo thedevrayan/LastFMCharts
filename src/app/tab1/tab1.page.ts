@@ -69,6 +69,7 @@ export class Tab1Page implements OnInit {
 
     try {
       await lastValueFrom(this.playlistService.addTrackToPlaylist(this.selectedPlaylistId, trackData));
+      this.playlistService.playlistsUpdated.next();
       alert(`Música "${track.name}" adicionada à playlist!`);
     } catch (err) {
       console.error('Erro ao adicionar música à playlist:', err);

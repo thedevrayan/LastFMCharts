@@ -108,5 +108,32 @@ router.delete('/playlists/:id', async (req, res) => {
   }
 });
 
+router.delete('/playlists/:id/tracks/:trackName', async (req, res) => {
+  try {
+    const { id, trackName } = req.params;
+
+    const playlist = await PlaylistModel.findById(id);
+    if (!playlist) {
+      return res.status(404).json({ message: 'Playlist não encontrada' });
+    }
+
+    const before = playlist.tracks.length;
+
+    playlist.tracks = playlist.tracks.filter(t => t.name !== trackName);
+
+    if (playlist.tracks.length === before) {
+      return res.status(404).json({ message: 'Música não encontrada na playlist' });
+    }
+
+    await playlist.save();
+
+    res.json({ message: 'Música removida com sucesso', playlist });
+  } catch (error) {
+    console.error('Erro ao remover música:', error);
+    res.status(500).json({ message: 'Erro ao remover música', error });
+  }
+});
+
+
 
 export default router;

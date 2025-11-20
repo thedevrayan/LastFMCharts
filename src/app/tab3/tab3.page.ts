@@ -1,20 +1,22 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { PlaylistService, Playlist, Track } from '../playlist.service';
+import { style } from '@angular/animations';
 
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
   styleUrls: ['tab3.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, HttpClientModule],
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class Tab3Page implements OnInit {
   public playlistService = inject(PlaylistService);
+    public alertController = inject(AlertController);
 
   public playlists: Playlist[] = [];
   public loading = false;
@@ -30,8 +32,11 @@ export class Tab3Page implements OnInit {
   expandedPlaylistId: string = '';
 
   async ngOnInit() {
-    await this.loadPlaylists();
-  }
+    this.loadPlaylists();
+    this.playlistService.playlistsUpdated.subscribe(() => {
+    this.loadPlaylists();
+  });
+}
 
   togglePlaylist(playlist: Playlist) {
  
@@ -150,12 +155,42 @@ async deletePlaylist(id?: string) {
 
   try {
     await lastValueFrom(this.playlistService.delete(id));
-    console.log("✅ Playlist excluída com sucesso!");
-    await this.loadPlaylists();
+
+    this.playlists = this.playlists.filter(p => p._id !== id);
+
+    console.log("Playlist excluída com sucesso!");
+
+    if (this.expandedPlaylistId === id) {
+      this.expandedPlaylistId = '';
+    }
+
   } catch (err) {
-    console.error("❌ Erro ao excluir playlist:", err);
+    console.error("Erro ao excluir playlist:", err);
   }
 }
+
+async confirmDeletePlaylist(playlist: Playlist) {
+  const alert = await this.alertController.create({
+    header: 'EXCLUIR PLAYLIST',
+    message: `Tem certeza que deseja excluir a playlist "${playlist.name}"? Esta ação não pode ser desfeita.`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Excluir',
+        role: 'destructive',
+        handler: () => {
+          this.deletePlaylist(playlist._id);
+        }
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
 
 async addTrackToPlaylist(playlistId: string, trackName: string) {
   const track = trackName?.trim();
@@ -203,13 +238,33 @@ async addTrack() {
 }
 
   async removeTrackFromPlaylist(playlistId: string, trackName: string) {
-    try {
-      await lastValueFrom(this.playlistService.removeTrackFromPlaylist(playlistId, trackName));
-      await this.loadPlaylists();
-    } catch (err) {
-      console.error('Erro ao remover música:', err);
+  try {
+    await lastValueFrom(this.playlistService.removeTrackFromPlaylist(playlistId, trackName));
+
+    this.playlistService.playlistsUpdated.next();
+
+    const playlist = this.playlists.find(p => p._id === playlistId);
+    if (playlist) {
+      playlist.tracks = playlist.tracks.filter(t => t.name !== trackName);
     }
+
+    this.playlists = this.playlists.map(p => {
+      if (p._id === playlistId) {
+        return {
+          ...p,
+          tracks: p.tracks.filter(t => t.name !== trackName)
+        };
+      }
+      return p;
+    });
+
+    console.log("Música removida da playlist localmente!");
+
+  } catch (err) {
+    console.error('Erro ao remover música:', err);
   }
+}
+
   
 }
 

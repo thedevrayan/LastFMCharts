@@ -51,10 +51,11 @@
           Editar
         </ion-button>
 
-        <ion-button fill="clear" color="danger" (click)="deletePlaylist(playlist._id)">
-          <ion-icon name="trash-outline" slot="start"></ion-icon>
-          Excluir
+        <ion-button fill="clear" color="danger" (click)="confirmDeletePlaylist(playlist)">
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+         Excluir
         </ion-button>
+
       </div>
     </ion-item-sliding>
   </ion-list>
@@ -139,6 +140,7 @@
             </ion-button>
           </ion-item>
         </ion-list>
+
 
       </ion-content>
     </ng-template>

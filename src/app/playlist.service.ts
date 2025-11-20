@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 export interface Track {
   name: string;
@@ -26,7 +26,9 @@ export class PlaylistService {
   }
 
   private apiUrl = 'http://localhost:3000/api/playlists'; 
-    
+
+  playlistsUpdated = new Subject<void>();
+
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Playlist[]> {
@@ -45,11 +47,13 @@ export class PlaylistService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  addTrackToPlaylist(id: string, track: Track) {
-  return this.http.post<Playlist>(`${this.apiUrl}/${id}/tracks`, track);
-}
+  addTrackToPlaylist(id: string, track: Track): Observable<Playlist> {
+    return this.http.post<Playlist>(`${this.apiUrl}/${id}/tracks`, track);
+  }
 
   removeTrackFromPlaylist(playlistId: string, trackName: string): Observable<Playlist> {
-    return this.http.delete<Playlist>(`${this.apiUrl}/${playlistId}/tracks/${encodeURIComponent(trackName)}`);
+    return this.http.delete<Playlist>(
+      `${this.apiUrl}/${playlistId}/tracks/${encodeURIComponent(trackName)}`
+    );
   }
 }

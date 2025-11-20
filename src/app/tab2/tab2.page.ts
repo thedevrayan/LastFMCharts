@@ -126,7 +126,7 @@ export class Tab2Page implements OnInit {
       addedAt: new Date().toISOString(),
     };
 
-    console.log('📌 Enviando track TAB2:', trackToAdd);
+    console.log('Enviando track TAB2:', trackToAdd);
 
     try {
       await lastValueFrom(
@@ -135,7 +135,8 @@ export class Tab2Page implements OnInit {
           trackToAdd
         )
       );
-      console.log('🎵 Música adicionada com sucesso!');
+      this.playlistService.playlistsUpdated.next();
+      console.log('Música adicionada com sucesso!');
     } catch (error) {
       console.error('Erro ao adicionar música do TAB2:', error);
     } finally {
