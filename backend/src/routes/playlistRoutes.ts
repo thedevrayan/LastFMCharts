@@ -63,18 +63,6 @@ router.post('/playlists/:id/tracks', async (req, res) => {
   }
 });
 
-
-router.put('/playlists/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updated = await PlaylistModel.findByIdAndUpdate(id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Playlist não encontrada' });
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar playlist', error });
-  }
-});
-
 router.put('/playlists/:id', async (req, res) => {
   try {
     const { id } = req.params;

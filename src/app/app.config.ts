@@ -15,7 +15,6 @@ import {
   createOutline
 } from 'ionicons/icons';
 
-// Registrar ícones globalmente
 addIcons({
   add,
   addCircleOutline,
@@ -31,6 +30,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideIonicAngular({}),
-    importProvidersFrom(HttpClientModule) // ✅ substitui Firebase por HttpClient
+    importProvidersFrom(HttpClientModule) 
   ]
 };
