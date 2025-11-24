@@ -25,7 +25,7 @@ export class PlaylistService {
     throw new Error('Method not implemented.');
   }
 
-  private apiUrl = 'http://192.168.0.9:3000/api/playlists'; 
+  private apiUrl = 'https://lastfm-backend-1.onrender.com/api/playlists'; 
 
   playlistsUpdated = new Subject<void>();
 
